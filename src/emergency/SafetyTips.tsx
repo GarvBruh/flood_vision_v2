@@ -6,9 +6,9 @@ function SafetyTips() {
         <div><p className="emergency-label">Flood safety</p><h2 id="safety-title">A few things to remember</h2></div>
       </div>
       <ul className="safety-priority-list">
-        <li><span aria-hidden="true">01</span><p><strong>Stay out of floodwater.</strong> Never walk, swim, or drive through it.</p></li>
-        <li><span aria-hidden="true">02</span><p><strong>Avoid electrical hazards.</strong> Don’t touch wet equipment or downed power lines.</p></li>
-        <li><span aria-hidden="true">03</span><p><strong>Follow official instructions.</strong> Evacuate promptly when local authorities direct you to.</p></li>
+        <li><p><strong>Stay out of floodwater.</strong> Never walk, swim, or drive through it.</p></li>
+        <li><p><strong>Avoid electrical hazards.</strong> Don’t touch wet equipment or downed power lines.</p></li>
+        <li><p><strong>Follow official instructions.</strong> Evacuate promptly when local authorities direct you to.</p></li>
       </ul>
       <details className="safety-more">
         <summary>More safety tips</summary>

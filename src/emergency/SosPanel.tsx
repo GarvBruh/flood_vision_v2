@@ -181,7 +181,7 @@ function SosPanel() {
         </button>
       </div>
       {contacts.length > 0 && <ul className="sos-contact-chips" aria-label="Saved emergency contacts">
-        {contacts.map((contact) => <li className={selectedIds.includes(contact.id) ? 'is-selected' : ''} key={contact.id}><span className="sos-contact-avatar" aria-hidden="true">{getInitials(contact.name)}</span><span><strong>{contact.name}</strong><small>{contact.relationship}</small></span><span className="sos-chip-state" aria-label={selectedIds.includes(contact.id) ? 'Selected' : 'Not selected'}>{selectedIds.includes(contact.id) ? '✓' : '–'}</span></li>)}
+        {contacts.map((contact) => <li className={selectedIds.includes(contact.id) ? 'is-selected' : ''} key={contact.id}><span className="sos-contact-avatar" aria-hidden="true">{getInitials(contact.name)}</span><span><strong>{contact.name}</strong><small>{contact.relationship}</small></span><span className="sos-chip-state" aria-label={selectedIds.includes(contact.id) ? 'Selected' : 'Not selected'}>{selectedIds.includes(contact.id) ? 'Selected' : 'Not selected'}</span></li>)}
       </ul>}
       <div className="sos-action-row">
         <button className="sos-trigger sos-primary-trigger" type="button" onClick={() => { setPrepared(null); setError(''); setConfirming(true) }} disabled={!selectedIds.length}>
