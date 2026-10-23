@@ -1,0 +1,205 @@
+.leaflet-map {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #cbd5e1;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  font: inherit;
+}
+
+.leaflet-control-attribution {
+  font-size: 10px;
+}
+
+.leaflet-control-zoom {
+  display: none;
+}
+
+/* Map Tile Error Banner */
+.map-tile-error-banner {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 540;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid #f59e0b;
+  color: #fef3c7;
+  font-size: 11.5px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Commute Environmental Data Card (Positioned bottom-right beside map tools to avoid panel collision) */
+.commute-data-card {
+  position: absolute;
+  z-index: 500;
+  right: 58px;
+  bottom: 14px;
+  width: 290px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--commute-border);
+  border-radius: 8px;
+  background: var(--commute-panel-bg);
+  color: var(--text-main);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.commute-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.card-value {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.card-tag-bmc {
+  font-size: 10px;
+  font-weight: 600;
+  color: #ea580c;
+  background: rgba(234, 88, 12, 0.15);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.card-subtext {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.card-source-links {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--commute-border);
+  font-size: 11px;
+}
+
+.card-source-links a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Map Tools (Zoom & Center) */
+.map-tools {
+  position: absolute;
+  z-index: 520;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.map-tools button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--commute-border);
+  border-radius: 6px;
+  background: var(--commute-panel-bg);
+  color: var(--text-main);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.map-tools button:hover {
+  background: var(--raised);
+  border-color: var(--accent);
+}
+
+/* BMC Flood-Spots Layer Toggle Button */
+.flood-layer-toggle {
+  position: absolute;
+  z-index: 520;
+  top: 12px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--commute-border);
+  border-radius: 8px;
+  background: var(--commute-panel-bg);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: all 0.15s;
+}
+
+.flood-layer-toggle:hover {
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.flood-layer-toggle.is-active {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #ea580c;
+  color: #fed7aa;
+}
+
+.flood-toggle-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ea580c;
+  box-shadow: 0 0 0 1px rgba(234, 88, 12, 0.4);
+}
+
+.flood-layer-toggle:not(.is-active) .flood-toggle-dot {
+  background: #64748b;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .commute-data-card {
+    display: none;
+  }
+
+  .flood-layer-toggle {
+    top: 58px;
+    right: 10px;
+  }
+
+  .map-tools {
+    right: 10px;
+    top: 104px;
+    bottom: auto;
+  }
+
+  .map-tile-error-banner {
+    width: 90%;
+    white-space: normal;
+    text-align: center;
+  }
+}
