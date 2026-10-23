@@ -1,4 +1,4 @@
-import teamDeoxysMark from '../assets/team-deoxys.png'
+import teamDeoxysMark from '../assets/team-deoxys-optimized.webp'
 import './AboutPage.css'
 
 const members = [

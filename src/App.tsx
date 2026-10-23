@@ -21,7 +21,7 @@ function getInitialTheme(): AppTheme {
 function App() {
   const [activePage, setActivePage] = useState<AppPage>('map')
   const [theme, setTheme] = useState<AppTheme>(getInitialTheme)
-  const [hasPlayedMapIntro, setHasPlayedMapIntro] = useState(false)
+  const [hasNavigated, setHasNavigated] = useState(false)
 
   function toggleTheme() {
     const nextTheme = theme === 'dark' ? 'light' : 'dark'
@@ -35,7 +35,7 @@ function App() {
     const updatePage = () => {
       flushSync(() => {
         setActivePage(page)
-        if (page === 'map') setHasPlayedMapIntro(true)
+        setHasNavigated(true)
       })
     }
 
@@ -46,7 +46,7 @@ function App() {
       document.startViewTransition(updatePage)
     } else {
       setActivePage(page)
-      if (page === 'map') setHasPlayedMapIntro(true)
+      setHasNavigated(true)
     }
   }
 
@@ -59,18 +59,18 @@ function App() {
         onToggleTheme={toggleTheme}
       />
       {activePage === 'map' ? (
-        <div className="app-page-frame app-page-frame--map" key="map">
+        <div className={`app-page-frame app-page-frame--map${hasNavigated ? ' app-page-frame--enter' : ''}`} key="map">
           <main className="app-map-stage" aria-label="Daily operations">
-            <MapScreen animateOpening={!hasPlayedMapIntro} />
+            <MapScreen />
           </main>
           <EmergencyAssistant onOpenEmergency={() => switchPage('emergency')} />
         </div>
       ) : activePage === 'emergency' ? (
-        <div className="app-page-frame app-page-frame--emergency" key="emergency">
+        <div className={`app-page-frame app-page-frame--emergency${hasNavigated ? ' app-page-frame--enter' : ''}`} key="emergency">
           <EmergencyPage />
         </div>
       ) : (
-        <div className="app-page-frame app-page-frame--about" key="about">
+        <div className={`app-page-frame app-page-frame--about${hasNavigated ? ' app-page-frame--enter' : ''}`} key="about">
           <AboutPage />
         </div>
       )}

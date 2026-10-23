@@ -10,11 +10,12 @@ import {
   saveNamedRoute,
   deleteNamedRoute,
   buildGoogleMapsUrl,
+  isLegacyDemoRoute,
 } from './routeTypes'
 import { fetchRoadRoutes } from '../../services/routingService'
 import { findNearbyFloodSpots, type BMCFloodSpot } from '../../data/bmcFloodSpots'
 
-export const MapScreen: React.FC<{ animateOpening?: boolean }> = ({ animateOpening = false }) => {
+export const MapScreen: React.FC = () => {
   // Saved named routes (Home to Office, Home to Market, Market to Office, etc.)
   const [savedRoutes, setSavedRoutes] = useState<SavedNamedRoute[]>(() => getSavedNamedRoutes())
   // Initially null: NO route is selected by default; page opens with clean map
@@ -331,24 +332,32 @@ export const MapScreen: React.FC<{ animateOpening?: boolean }> = ({ animateOpeni
           <div className="saved-routes-selector" role="tablist" aria-label="Select a saved route">
             {filteredRoutes.length === 0 ? (
               <div className="routes-empty-state">
-                <span>No routes match "{searchQuery}"</span>
-                <button
-                  type="button"
-                  className="btn-link-action"
-                  onClick={() => setSearchQuery('')}
-                >
-                  Clear filter
-                </button>
+                {savedRoutes.length === 0 ? (
+                  <span>No saved routes yet. Add a route to get started.</span>
+                ) : (
+                  <>
+                    <span>No routes match "{searchQuery}"</span>
+                    <button
+                      type="button"
+                      className="btn-link-action"
+                      onClick={() => setSearchQuery('')}
+                    >
+                      Clear filter
+                    </button>
+                  </>
+                )}
               </div>
             ) : (
               filteredRoutes.map((r) => {
                 const isSelected = r.id === selectedRouteId
+                const isDemoExample = isLegacyDemoRoute(r.id)
                 return (
                   <div
                     key={r.id}
                     role="tab"
                     tabIndex={0}
                     aria-selected={isSelected}
+                    aria-label={isDemoExample ? `${r.name}, demo example` : r.name}
                     className={`route-pill ${isSelected ? 'active' : ''}`}
                     onClick={() => handleSelectRoute(r)}
                     onKeyDown={(e) => {
@@ -356,7 +365,8 @@ export const MapScreen: React.FC<{ animateOpening?: boolean }> = ({ animateOpeni
                     }}
                   >
                     <span className="pill-name">{r.name}</span>
-                    {savedRoutes.length > 1 && (
+                    {isDemoExample && <span className="pill-demo-label">Demo example</span>}
+                    {(savedRoutes.length > 1 || isDemoExample) && (
                       <button
                         type="button"
                         className="btn-remove-pill"
@@ -663,7 +673,6 @@ export const MapScreen: React.FC<{ animateOpening?: boolean }> = ({ animateOpeni
       {/* Main Map Viewport */}
       <main className="map-viewport" role="region" aria-label="Interactive Map Area">
         <MapCanvas
-          animateOpening={animateOpening}
           activeRoute={activeMapRoute}
           alternativeRoute={hasWaterloggingRisk ? altRoute : null}
           selectedRouteId={currentVariant}

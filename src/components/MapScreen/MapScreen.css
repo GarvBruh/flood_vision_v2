@@ -285,6 +285,18 @@
   white-space: nowrap;
 }
 
+.pill-demo-label {
+  padding: 2px 5px;
+  border: 1px solid color-mix(in srgb, var(--brand-blue) 35%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand-blue) 12%, transparent);
+  color: var(--brand-blue);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
 .btn-remove-pill {
   background: transparent;
   border: none;

@@ -60,42 +60,20 @@ export function calculateDistanceKm(from: Place, to: Place): number {
 }
 
 const SAVED_ROUTES_KEY = 'floodvision_saved_named_routes_v2'
+const LEGACY_DEMO_ROUTE_IDS = new Set([
+  'route-home-office',
+  'route-home-market',
+  'route-market-office',
+])
+
+export function isLegacyDemoRoute(routeId: string): boolean {
+  return LEGACY_DEMO_ROUTE_IDS.has(routeId)
+}
 
 export function getSavedNamedRoutes(): SavedNamedRoute[] {
   try {
     const raw = localStorage.getItem(SAVED_ROUTES_KEY)
-    if (!raw) {
-      // Initialize with sample regular commute routes for Mumbai demo
-      const dadar = MUMBAI_HUBS.find((h) => h.name === 'Dadar') || MUMBAI_HUBS[0]
-      const bkc = MUMBAI_HUBS.find((h) => h.name.includes('BKC')) || MUMBAI_HUBS[2]
-      const lowerParel = MUMBAI_HUBS.find((h) => h.name.includes('Lower Parel')) || MUMBAI_HUBS[4]
-
-      const initial: SavedNamedRoute[] = [
-        {
-          id: 'route-home-office',
-          name: 'Home to Office',
-          from: dadar,
-          to: bkc,
-          createdAt: 'Saved',
-        },
-        {
-          id: 'route-home-market',
-          name: 'Home to Market',
-          from: dadar,
-          to: lowerParel,
-          createdAt: 'Saved',
-        },
-        {
-          id: 'route-market-office',
-          name: 'Market to Office',
-          from: lowerParel,
-          to: bkc,
-          createdAt: 'Saved',
-        },
-      ]
-      localStorage.setItem(SAVED_ROUTES_KEY, JSON.stringify(initial))
-      return initial
-    }
+    if (!raw) return []
     return JSON.parse(raw) as SavedNamedRoute[]
   } catch {
     return []

@@ -13,7 +13,6 @@ const FLOOD_SPOTS_URL =
 type Rain = { precipitation: number | null; rain: number | null; time: string; locationName: string }
 
 export interface MapCanvasProps {
-  animateOpening?: boolean
   activeRoute?: RouteData | null
   alternativeRoute?: RouteData | null
   selectedRouteId?: string
@@ -22,7 +21,6 @@ export interface MapCanvasProps {
 }
 
 export function MapCanvas({
-  animateOpening = false,
   activeRoute,
   alternativeRoute,
   selectedRouteId = 'primary',
@@ -46,13 +44,8 @@ export function MapCanvas({
   useEffect(() => {
     if (!element.current) return
     const mapElement = element.current
-    const playFlyIn = animateOpening && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const instance = L.map(mapElement, { zoomControl: false }).setView(
-      playFlyIn ? [22, 78] : [MUMBAI.lat, MUMBAI.lon],
-      playFlyIn ? 4 : 11,
-    )
+    const instance = L.map(mapElement, { zoomControl: false }).setView([MUMBAI.lat, MUMBAI.lon], 11)
     map.current = instance
-    let openingTimer: number | undefined
 
     const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -65,15 +58,6 @@ export function MapCanvas({
     tileLayer.on('tileload', () => {
       setTileError(false)
     })
-
-    if (playFlyIn) {
-      openingTimer = window.setTimeout(() => {
-        instance.flyTo([MUMBAI.lat, MUMBAI.lon], 13, {
-          duration: 3.6,
-          easeLinearity: 0.22,
-        })
-      }, 220)
-    }
 
     L.control.zoom({ position: 'bottomright' }).addTo(instance)
 
@@ -169,12 +153,11 @@ export function MapCanvas({
       resizeObserver.disconnect()
       window.removeEventListener('resize', handleWindowResize)
       instance.off('zoom', syncRiskSpotVisibility)
-      if (openingTimer !== undefined) window.clearTimeout(openingTimer)
       instance.remove()
       map.current = null
       floodRiskLayerGroup.current = null
     }
-  }, [animateOpening])
+  }, [])
 
   // Invalidate map size whenever isMinimized changes
   useEffect(() => {
