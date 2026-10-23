@@ -6,12 +6,14 @@ import type { Place, RouteData } from './routeTypes'
 import { BMC_HISTORICAL_SPOTS } from '../../data/bmcFloodSpots'
 
 const MUMBAI: Place = { name: 'Mumbai', lat: 19.076, lon: 72.8777 }
+const MIN_RISK_SPOT_ZOOM = 10
 const FLOOD_SPOTS_URL =
   'https://prsrvgisapp.mcgm.gov.in/server/rest/services/mcgm/MCGMGIS_Departments_Master_All_Layers_WGS/MapServer/344/query?where=1%3D1&geometry=72.7%2C18.8%2C73.1%2C19.3&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=NAME%2CWARD&returnGeometry=true&outSR=4326&geometryPrecision=5&f=geojson'
 
 type Rain = { precipitation: number | null; rain: number | null; time: string; locationName: string }
 
 export interface MapCanvasProps {
+  animateOpening?: boolean
   activeRoute?: RouteData | null
   alternativeRoute?: RouteData | null
   selectedRouteId?: string
@@ -20,6 +22,7 @@ export interface MapCanvasProps {
 }
 
 export function MapCanvas({
+  animateOpening = false,
   activeRoute,
   alternativeRoute,
   selectedRouteId = 'primary',
@@ -32,16 +35,24 @@ export function MapCanvas({
   const floodRiskLayerGroup = useRef<L.LayerGroup | null>(null)
   const hadRouteRef = useRef(false)
   const rainRequestId = useRef(0)
+  const showFloodSpotsRef = useRef(false)
 
   const [rain, setRain] = useState<Rain | null>(null)
-  const [showFloodSpots, setShowFloodSpots] = useState(true)
+  const [showFloodSpots, setShowFloodSpots] = useState(false)
+  const [isDataCardMinimized, setIsDataCardMinimized] = useState(false)
   const [tileError, setTileError] = useState(false)
 
   // Initial map setup
   useEffect(() => {
     if (!element.current) return
-    const instance = L.map(element.current, { zoomControl: false }).setView([MUMBAI.lat, MUMBAI.lon], 11)
+    const mapElement = element.current
+    const playFlyIn = animateOpening && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const instance = L.map(mapElement, { zoomControl: false }).setView(
+      playFlyIn ? [22, 78] : [MUMBAI.lat, MUMBAI.lon],
+      playFlyIn ? 4 : 11,
+    )
     map.current = instance
+    let openingTimer: number | undefined
 
     const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -55,10 +66,19 @@ export function MapCanvas({
       setTileError(false)
     })
 
+    if (playFlyIn) {
+      openingTimer = window.setTimeout(() => {
+        instance.flyTo([MUMBAI.lat, MUMBAI.lon], 13, {
+          duration: 3.6,
+          easeLinearity: 0.22,
+        })
+      }, 220)
+    }
+
     L.control.zoom({ position: 'bottomright' }).addTo(instance)
 
     // Municipal historical risk spots layer (visible by default)
-    const bmcGroup = L.layerGroup().addTo(instance)
+    const bmcGroup = L.layerGroup()
     floodRiskLayerGroup.current = bmcGroup
     for (const spot of BMC_HISTORICAL_SPOTS) {
       L.circleMarker([spot.lat, spot.lon], {
@@ -75,6 +95,19 @@ export function MapCanvas({
         )
         .addTo(bmcGroup)
     }
+
+    const syncRiskSpotVisibility = () => {
+      const shouldShow = showFloodSpotsRef.current && instance.getZoom() >= MIN_RISK_SPOT_ZOOM
+      if (shouldShow && !instance.hasLayer(bmcGroup)) {
+        bmcGroup.addTo(instance)
+      } else if (!shouldShow && instance.hasLayer(bmcGroup)) {
+        bmcGroup.remove()
+      } else {
+        return
+      }
+    }
+    instance.on('zoom', syncRiskSpotVisibility)
+    syncRiskSpotVisibility()
 
     routeLayerGroup.current = L.layerGroup().addTo(instance)
 
@@ -125,7 +158,7 @@ export function MapCanvas({
     const resizeObserver = new ResizeObserver(() => {
       instance.invalidateSize()
     })
-    resizeObserver.observe(element.current)
+    resizeObserver.observe(mapElement)
 
     const handleWindowResize = () => {
       instance.invalidateSize()
@@ -135,11 +168,13 @@ export function MapCanvas({
     return () => {
       resizeObserver.disconnect()
       window.removeEventListener('resize', handleWindowResize)
+      instance.off('zoom', syncRiskSpotVisibility)
+      if (openingTimer !== undefined) window.clearTimeout(openingTimer)
       instance.remove()
       map.current = null
       floodRiskLayerGroup.current = null
     }
-  }, [])
+  }, [animateOpening])
 
   // Invalidate map size whenever isMinimized changes
   useEffect(() => {
@@ -152,8 +187,11 @@ export function MapCanvas({
 
   // Toggle flood spots visibility
   useEffect(() => {
+    showFloodSpotsRef.current = showFloodSpots
     if (!map.current || !floodRiskLayerGroup.current) return
-    if (showFloodSpots) floodRiskLayerGroup.current.addTo(map.current)
+    if (showFloodSpots && map.current.getZoom() >= MIN_RISK_SPOT_ZOOM) {
+      floodRiskLayerGroup.current.addTo(map.current)
+    }
     else floodRiskLayerGroup.current.remove()
   }, [showFloodSpots])
 
@@ -297,40 +335,62 @@ export function MapCanvas({
       </button>
 
       {/* Practical Environmental Data Card */}
-      <aside className="commute-data-card" aria-live="polite">
-        <div className="commute-card-row">
-          <span className="card-label">Rain near {rain?.locationName || MUMBAI.name}:</span>
-          <span className="card-value">
-            {effectiveRain === null ? 'Unavailable' : `${effectiveRain.toFixed(1)} mm`}
-            {rainEstimateOverride !== undefined && rainEstimateOverride !== null
-              ? ' (Demo simulation)'
-              : ' (Model estimate)'}
-          </span>
-        </div>
-        <div className="card-subtext">
-          Source: Open-Meteo numerical weather model. Not live radar.
-        </div>
-
-        <div className="commute-card-row" style={{ marginTop: '6px' }}>
-          <span className="card-label">BMC Risk Layer:</span>
-          <span className="card-tag-bmc">Orange zones mapped</span>
-        </div>
-        <div className="card-subtext">
-          Historical flood-prone areas mapped by BMC. Does not indicate live flooding.
-        </div>
-
-        <div className="card-source-links">
-          <a href="https://api.open-meteo.com/" target="_blank" rel="noreferrer">
-            Open-Meteo API
-          </a>
-          {' · '}
-          <a
-            href="https://prsrvgisapp.mcgm.gov.in/server/rest/services/mcgm/MCGMGIS_Departments_Master_All_Layers_WGS/MapServer/344"
-            target="_blank"
-            rel="noreferrer"
+      <aside className={`commute-data-card${isDataCardMinimized ? ' is-minimized' : ''}`} aria-live="polite">
+        <div className="commute-data-card-header">
+          <div className="commute-card-row">
+            <span className="card-label">Rain near {rain?.locationName || MUMBAI.name}:</span>
+            <span className="card-value">
+              {effectiveRain === null ? 'Unavailable' : `${effectiveRain.toFixed(1)} mm`}
+              {rainEstimateOverride !== undefined && rainEstimateOverride !== null
+                ? ' (Demo simulation)'
+                : ' (Model estimate)'}
+            </span>
+          </div>
+          <button
+            type="button"
+            className="commute-data-card-toggle"
+            onClick={() => setIsDataCardMinimized((minimized) => !minimized)}
+            aria-label={isDataCardMinimized ? 'Expand rain and BMC information' : 'Minimize rain and BMC information'}
+            aria-expanded={!isDataCardMinimized}
+            aria-controls="commute-data-card-details"
+            title={isDataCardMinimized ? 'Expand details' : 'Minimize details'}
           >
-            BMC GIS Source
-          </a>
+            <span aria-hidden="true">{isDataCardMinimized ? '+' : '−'}</span>
+          </button>
+        </div>
+        <div
+          id="commute-data-card-details"
+          className="commute-data-card-details"
+          aria-hidden={isDataCardMinimized}
+          inert={isDataCardMinimized}
+        >
+          <div className="commute-data-card-details-inner">
+            <div className="card-subtext">
+              Source: Open-Meteo numerical weather model. Not live radar.
+            </div>
+
+            <div className="commute-card-row commute-data-bmc-row">
+              <span className="card-label">BMC Risk Layer:</span>
+              <span className="card-tag-bmc">Orange zones mapped</span>
+            </div>
+            <div className="card-subtext">
+              Historical flood-prone areas mapped by BMC. Does not indicate live flooding.
+            </div>
+
+            <div className="card-source-links">
+              <a href="https://api.open-meteo.com/" target="_blank" rel="noreferrer">
+                Open-Meteo API
+              </a>
+              {' · '}
+              <a
+                href="https://prsrvgisapp.mcgm.gov.in/server/rest/services/mcgm/MCGMGIS_Departments_Master_All_Layers_WGS/MapServer/344"
+                target="_blank"
+                rel="noreferrer"
+              >
+                BMC GIS Source
+              </a>
+            </div>
+          </div>
         </div>
       </aside>
 

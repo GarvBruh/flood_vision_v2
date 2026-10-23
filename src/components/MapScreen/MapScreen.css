@@ -33,27 +33,56 @@
   z-index: 520;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 11px;
   background: var(--commute-panel-bg);
   border: 1px solid var(--commute-border);
-  border-radius: 8px;
-  padding: 8px 14px;
-  color: #ffffff;
+  border-radius: 13px;
+  padding: 8px 12px 8px 9px;
+  color: var(--text-main);
+  text-align: left;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-  transition: background 0.15s, border-color 0.15s;
+  box-shadow: 0 5px 18px rgb(0 0 0 / 20%);
+  opacity: 0;
+  transform: translateY(-7px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 220ms ease, background 0.18s, border-color 0.18s, transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s;
 }
 
+.btn-reopen-panel.is-visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
 .btn-reopen-panel:hover {
-  background: #1e293b;
-  border-color: #38bdf8;
+  border-color: color-mix(in srgb, var(--brand-blue) 58%, var(--commute-border));
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 25%);
 }
 
 .reopen-icon {
-  font-size: 14px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--brand-blue) 34%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--brand-blue) 13%, transparent);
+  color: var(--brand-blue);
 }
+
+.reopen-icon svg { width: 21px; height: 21px; }
+
+.reopen-copy { display: grid; gap: 2px; min-width: 0; }
+.reopen-eyebrow { color: var(--text-subtle); font-size: 9px; font-weight: 700; letter-spacing: 0.11em; line-height: 1; text-transform: uppercase; }
+.reopen-title { color: var(--text-main); font-size: 13px; font-weight: 700; line-height: 1.2; }
+.reopen-detail { max-width: 190px; overflow: hidden; color: var(--text-muted); font-size: 10px; font-weight: 500; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
+.reopen-chevron { margin-left: 4px; color: var(--text-subtle); font-size: 15px; }
+.btn-reopen-panel:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }
+.btn-reopen-panel:active { transform: translateY(0); }
+
+.ep[data-theme='light'] .reopen-eyebrow { color: #697c8d; }
+.ep[data-theme='light'] .reopen-detail { color: #526679; }
+.ep[data-theme='light'] .reopen-chevron { color: #60778c; }
 
 /* Main Commute Panel */
 .commute-panel {
@@ -64,6 +93,7 @@
   width: 350px;
   max-width: calc(100% - 28px);
   max-height: calc(100svh - var(--top-bar-h) - 24px);
+  visibility: visible;
   overflow-y: auto;
   background: var(--commute-panel-bg);
   border: 1px solid var(--commute-border);
@@ -73,6 +103,16 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transform-origin: top left;
+  transition: opacity 190ms ease, transform 240ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear;
+}
+
+.commute-panel.is-collapsed {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-7px) scale(0.985);
+  pointer-events: none;
+  transition-delay: 0s, 0s, 240ms;
 }
 
 /* Panel Top Bar with Minimize & Clear */
@@ -781,9 +821,15 @@
 
   .btn-reopen-panel {
     top: auto;
-    bottom: 12px;
+    bottom: 78px;
     left: 12px;
+    max-width: min(280px, calc(100% - 24px));
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-reopen-panel,
+  .commute-panel { transition: none; }
 }
 
 /* Light theme for the map controls; the geographic map tiles remain unchanged. */

@@ -14,7 +14,7 @@ import {
 import { fetchRoadRoutes } from '../../services/routingService'
 import { findNearbyFloodSpots, type BMCFloodSpot } from '../../data/bmcFloodSpots'
 
-export const MapScreen: React.FC = () => {
+export const MapScreen: React.FC<{ animateOpening?: boolean }> = ({ animateOpening = false }) => {
   // Saved named routes (Home to Office, Home to Market, Market to Office, etc.)
   const [savedRoutes, setSavedRoutes] = useState<SavedNamedRoute[]>(() => getSavedNamedRoutes())
   // Initially null: NO route is selected by default; page opens with clean map
@@ -246,22 +246,38 @@ export const MapScreen: React.FC = () => {
   return (
     <div className="commute-screen">
       {/* Floating Reopen Button (Visible when panel is minimized) */}
-      {isMinimized && (
-        <button
-          type="button"
-          className="btn-reopen-panel"
-          onClick={() => setIsMinimized(false)}
-          aria-label="Reopen route panel"
-          title="Open route panel"
-        >
-          <span className="reopen-icon" aria-hidden="true">🗺️</span>
-          <span>Saved Routes{activeSavedRoute ? ` · ${activeSavedRoute.name}` : ''}</span>
-        </button>
-      )}
+      <button
+        type="button"
+        className={`btn-reopen-panel${isMinimized ? ' is-visible' : ''}`}
+        onClick={() => setIsMinimized(false)}
+        aria-label="Reopen route panel"
+        title="Open route panel"
+        aria-hidden={!isMinimized}
+        inert={!isMinimized}
+        tabIndex={isMinimized ? 0 : -1}
+      >
+          <span className="reopen-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m3.5 6.25 5.7-2 5.6 2 5.7-2v13.5l-5.7 2-5.6-2-5.7 2V6.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M9.2 4.25v13.5m5.6-11.5v13.5" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </span>
+          <span className="reopen-copy">
+            <span className="reopen-eyebrow">Route planner</span>
+            <span className="reopen-title">Saved Routes</span>
+            <span className="reopen-detail">{activeSavedRoute?.name ?? 'Open your route workspace'}</span>
+          </span>
+          <span className="reopen-chevron" aria-hidden="true">↗</span>
+      </button>
 
       {/* Main Commute Panel */}
-      {!isMinimized && (
-        <div className="commute-panel" role="region" aria-label="Route Planning Panel">
+        <div
+          className={`commute-panel${isMinimized ? ' is-collapsed' : ''}`}
+          role="region"
+          aria-label="Route Planning Panel"
+          aria-hidden={isMinimized}
+          inert={isMinimized}
+        >
           {/* Panel Top Bar with Heading, Clear Selection, and Minimize Button */}
           <div className="panel-top-bar">
             <span className="panel-heading">My Saved Routes</span>
@@ -643,11 +659,11 @@ export const MapScreen: React.FC = () => {
             </ul>
           </div>
         </div>
-      )}
 
       {/* Main Map Viewport */}
       <main className="map-viewport" role="region" aria-label="Interactive Map Area">
         <MapCanvas
+          animateOpening={animateOpening}
           activeRoute={activeMapRoute}
           alternativeRoute={hasWaterloggingRisk ? altRoute : null}
           selectedRouteId={currentVariant}

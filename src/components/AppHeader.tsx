@@ -1,6 +1,6 @@
 import './AppHeader.css'
 
-export type AppPage = 'map' | 'emergency'
+export type AppPage = 'map' | 'emergency' | 'about'
 export type AppTheme = 'light' | 'dark'
 
 interface AppHeaderProps {
@@ -41,8 +41,8 @@ function ThemeIcon({ theme }: { theme: AppTheme }) {
 }
 
 export default function AppHeader({ activePage, theme, onPageChange, onToggleTheme }: AppHeaderProps) {
-  const otherPage: AppPage = activePage === 'map' ? 'emergency' : 'map'
-  const pageLabel = activePage === 'map' ? 'Daily operations' : 'Emergency response'
+  const logoTarget: AppPage = activePage === 'map' ? 'emergency' : 'map'
+  const pageLabel = activePage === 'map' ? 'Daily operations' : activePage === 'emergency' ? 'Emergency response' : 'About Us'
 
   return (
     <header className="ep-topbar fv-app-header">
@@ -50,8 +50,8 @@ export default function AppHeader({ activePage, theme, onPageChange, onToggleThe
         <button
           className="ep-mark fv-brand-button"
           type="button"
-          onClick={() => onPageChange(otherPage)}
-          aria-label={`Switch to ${otherPage === 'map' ? 'Daily Operations' : 'Emergency Response'}`}
+          onClick={() => onPageChange(logoTarget)}
+          aria-label={`Switch to ${logoTarget === 'map' ? 'Daily Operations' : 'Emergency Response'}`}
           title="Switch Flood Vision mode"
         >
           <WaveMark />
@@ -67,7 +67,8 @@ export default function AppHeader({ activePage, theme, onPageChange, onToggleThe
           aria-pressed={activePage === 'map'}
           onClick={() => onPageChange('map')}
         >
-          Daily Operations
+          <span className="fv-mode-label-full">Daily Operations</span>
+          <span className="fv-mode-label-compact">Daily</span>
         </button>
         <button
           className="fv-mode-option"
@@ -75,7 +76,17 @@ export default function AppHeader({ activePage, theme, onPageChange, onToggleThe
           aria-pressed={activePage === 'emergency'}
           onClick={() => onPageChange('emergency')}
         >
-          Emergency Response
+          <span className="fv-mode-label-full">Emergency Response</span>
+          <span className="fv-mode-label-compact">Emergency</span>
+        </button>
+        <button
+          className="fv-mode-option"
+          type="button"
+          aria-pressed={activePage === 'about'}
+          onClick={() => onPageChange('about')}
+        >
+          <span className="fv-mode-label-full">About Us</span>
+          <span className="fv-mode-label-compact">About</span>
         </button>
       </nav>
 
@@ -90,16 +101,10 @@ export default function AppHeader({ activePage, theme, onPageChange, onToggleThe
         >
           <ThemeIcon theme={theme} />
         </button>
-        {activePage === 'emergency' ? (
-          <a className="ep-call-112" href="tel:112" aria-label="Call India's national emergency number 112">
-            <PhoneIcon />
-            <span>Call 112</span>
-          </a>
-        ) : (
-          <button className="ep-call-112 fv-open-emergency" type="button" onClick={() => onPageChange('emergency')}>
-            Emergency Help
-          </button>
-        )}
+        <a className="ep-call-112" href="tel:112" aria-label="Call India's national emergency number 112">
+          <PhoneIcon />
+          <span>Call 112</span>
+        </a>
       </div>
     </header>
   )
